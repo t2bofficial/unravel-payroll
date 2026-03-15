@@ -28,6 +28,90 @@
   }
   body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; background: var(--bg-3); color: var(--text); min-height: 100vh; font-size: 14px; line-height: 1.5; }
 
+  /* ── LOCK SCREEN ── */
+  #lock-screen {
+    position: fixed; inset: 0; z-index: 1000;
+    background: var(--bg-3);
+    display: flex; align-items: center; justify-content: center;
+    padding: 24px;
+  }
+  .lock-card {
+    background: var(--bg);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-xl);
+    padding: 40px 36px;
+    width: 100%; max-width: 380px;
+    text-align: center;
+  }
+  .lock-logo {
+    width: 52px; height: 52px; border-radius: 14px;
+    background: var(--brand);
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 20px;
+  }
+  .lock-logo svg { width: 24px; height: 24px; fill: white; }
+  .lock-title { font-size: 18px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+  .lock-sub { font-size: 13px; color: var(--text-2); margin-bottom: 28px; }
+  .lock-input-wrap { position: relative; margin-bottom: 12px; }
+  .lock-input {
+    width: 100%; padding: 11px 44px 11px 14px;
+    font-size: 15px; letter-spacing: 0.1em;
+    border: 0.5px solid var(--border-2);
+    border-radius: var(--radius);
+    background: var(--bg-2); color: var(--text);
+    outline: none; transition: border-color 0.15s;
+  }
+  .lock-input:focus { border-color: var(--brand); background: var(--bg); }
+  .lock-input.shake { animation: shake 0.35s ease; border-color: var(--danger) !important; }
+  @keyframes shake {
+    0%,100%{transform:translateX(0)} 20%{transform:translateX(-6px)}
+    40%{transform:translateX(6px)} 60%{transform:translateX(-4px)}
+    80%{transform:translateX(4px)}
+  }
+  .lock-eye {
+    position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+    background: none; border: none; cursor: pointer; color: var(--text-3);
+    padding: 4px; display: flex; align-items: center;
+  }
+  .lock-eye:hover { color: var(--text-2); }
+  .lock-eye svg { width: 18px; height: 18px; }
+  .lock-btn {
+    width: 100%; padding: 11px;
+    font-size: 14px; font-weight: 600;
+    background: var(--brand); color: white;
+    border: none; border-radius: var(--radius);
+    cursor: pointer; transition: opacity 0.15s;
+    margin-bottom: 12px;
+  }
+  .lock-btn:hover { opacity: 0.88; }
+  .lock-error {
+    font-size: 12px; color: var(--danger);
+    min-height: 18px; margin-bottom: 4px;
+    transition: opacity 0.2s;
+  }
+  .lock-hint { font-size: 11px; color: var(--text-3); margin-top: 20px; }
+  .lock-dots {
+    display: flex; justify-content: center; gap: 6px;
+    margin-bottom: 24px;
+  }
+  .lock-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--brand-50); border: 0.5px solid var(--paid-border);
+    transition: background 0.15s;
+  }
+  .lock-dot.filled { background: var(--brand); }
+
+  /* Change password panel */
+  .change-pw-link {
+    font-size: 12px; color: var(--text-3); cursor: pointer;
+    text-decoration: underline; text-underline-offset: 2px;
+    margin-top: 12px; display: inline-block;
+  }
+  .change-pw-link:hover { color: var(--text-2); }
+
+  /* ── APP (hidden until unlocked) ── */
+  #app { display: none; }
+
   /* Topbar */
   .topbar { background: var(--bg); border-bottom: 0.5px solid var(--border); padding: 0 24px; height: 56px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
   .topbar-left { display: flex; align-items: center; gap: 12px; }
@@ -79,17 +163,14 @@
   .search-input { padding: 6px 12px; font-size: 13px; border: 0.5px solid var(--border-2); border-radius: var(--radius); background: var(--bg-2); color: var(--text); width: 200px; outline: none; }
   .search-input:focus { border-color: var(--brand); }
   .search-input::placeholder { color: var(--text-3); }
-
   .table-head { display: grid; grid-template-columns: 36px 1fr 130px 120px 110px 36px; padding: 9px 18px; background: var(--bg-2); font-size: 11px; font-weight: 600; color: var(--text-2); text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 0.5px solid var(--border); }
   .emp-row { display: grid; grid-template-columns: 36px 1fr 130px 120px 110px 36px; padding: 10px 18px; align-items: center; border-bottom: 0.5px solid var(--border); transition: background 0.1s; }
   .emp-row:last-child { border-bottom: none; }
   .emp-row:hover { background: var(--bg-2); }
-
-  /* QR thumbnail in table */
-  .qr-thumb { width: 28px; height: 28px; border-radius: 4px; object-fit: cover; border: 0.5px solid var(--border); cursor: pointer; }
+  .qr-thumb { width: 28px; height: 28px; border-radius: 4px; object-fit: cover; border: 0.5px solid var(--border); cursor: pointer; transition: transform 0.15s; }
+  .qr-thumb:hover { transform: scale(1.1); }
   .qr-placeholder { width: 28px; height: 28px; border-radius: 4px; border: 0.5px dashed var(--border-2); display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text-3); font-size: 14px; transition: all 0.15s; }
   .qr-placeholder:hover { border-color: var(--brand); color: var(--brand); background: var(--brand-50); }
-
   .emp-name-cell { display: flex; align-items: center; gap: 10px; cursor: pointer; }
   .avatar { width: 30px; height: 30px; border-radius: 50%; background: var(--brand-50); color: var(--brand-dark); font-size: 11px; font-weight: 600; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
   .emp-name { font-size: 14px; font-weight: 500; color: var(--text); }
@@ -103,7 +184,6 @@
   .badge.unpaid { background: var(--bg-2); color: var(--text-2); border-color: var(--border); }
   .del-btn { width: 28px; height: 28px; border-radius: 50%; border: none; background: none; cursor: pointer; color: var(--text-3); font-size: 16px; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
   .del-btn:hover { background: var(--danger-bg); color: var(--danger); }
-
   .table-total { display: grid; grid-template-columns: 36px 1fr 130px 120px 110px 36px; padding: 11px 18px; background: var(--bg-2); font-size: 13px; font-weight: 600; border-top: 0.5px solid var(--border-2); }
   .table-total .lbl { font-size: 11px; font-weight: 500; color: var(--text-2); text-transform: uppercase; letter-spacing: 0.05em; }
 
@@ -133,15 +213,11 @@
   /* Detail panel */
   .detail-top { display: flex; align-items: flex-start; gap: 16px; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 0.5px solid var(--border); }
   .detail-avatar { width: 52px; height: 52px; border-radius: 50%; background: var(--brand-50); color: var(--brand-dark); font-size: 17px; font-weight: 600; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-  .detail-info { flex: 1; }
   .detail-name { font-size: 17px; font-weight: 600; color: var(--text); }
   .detail-meta { font-size: 13px; color: var(--text-2); margin-top: 3px; }
-
-  /* QR section in detail */
   .qr-section { margin-bottom: 20px; }
   .section-title { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-3); margin-bottom: 10px; }
   .qr-card { background: var(--bg-2); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 16px; display: flex; align-items: center; gap: 16px; }
-  .qr-image-wrap { position: relative; flex-shrink: 0; }
   .qr-display { width: 110px; height: 110px; border-radius: var(--radius); object-fit: contain; border: 0.5px solid var(--border); background: white; cursor: pointer; transition: transform 0.15s; }
   .qr-display:hover { transform: scale(1.03); }
   .qr-empty { width: 110px; height: 110px; border-radius: var(--radius); border: 2px dashed var(--border-2); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; cursor: pointer; transition: all 0.15s; color: var(--text-3); }
@@ -154,22 +230,16 @@
   .qr-actions { display: flex; flex-direction: column; gap: 6px; }
   .qr-upload-btn { position: relative; overflow: hidden; }
   .qr-upload-btn input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; font-size: 0; }
-
-  /* Fullscreen QR viewer */
   .qr-viewer { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 300; cursor: pointer; animation: fadeIn 0.15s; }
   .qr-viewer img { max-width: 85vw; max-height: 75vh; border-radius: var(--radius-lg); object-fit: contain; }
   .qr-viewer-name { color: white; font-size: 16px; font-weight: 600; margin-top: 16px; }
   .qr-viewer-sub { color: rgba(255,255,255,0.6); font-size: 13px; margin-top: 4px; }
   .qr-viewer-hint { color: rgba(255,255,255,0.35); font-size: 12px; margin-top: 16px; }
-
-  /* Edit fields */
   .edit-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
   .edit-field { display: flex; flex-direction: column; gap: 5px; }
   .edit-label { font-size: 11px; font-weight: 500; color: var(--text-2); text-transform: uppercase; letter-spacing: 0.04em; }
   .edit-input { padding: 8px 11px; font-size: 13px; border: 0.5px solid var(--border-2); border-radius: var(--radius); background: var(--bg-2); color: var(--text); outline: none; transition: border-color 0.15s; }
   .edit-input:focus { border-color: var(--brand); background: var(--bg); }
-
-  /* Cutoff list */
   .cutoff-list { display: flex; flex-direction: column; gap: 5px; }
   .cutoff-item { display: flex; align-items: center; justify-content: space-between; padding: 9px 13px; border: 0.5px solid var(--border); border-radius: var(--radius); transition: all 0.1s; }
   .cutoff-item.is-paid { background: var(--paid-bg); border-color: var(--paid-border); }
@@ -182,13 +252,12 @@
   .toggle-pill { padding: 4px 10px; font-size: 11px; font-weight: 600; border-radius: 20px; border: 0.5px solid; cursor: pointer; transition: all 0.15s; }
   .toggle-pill.mark-paid { background: var(--paid-bg); color: var(--paid-color); border-color: var(--paid-border); }
   .toggle-pill.mark-unpaid { background: var(--bg-2); color: var(--text-2); border-color: var(--border-2); }
-
   .progress-wrap { margin-top: 16px; }
   .progress-track { height: 5px; background: var(--border); border-radius: 3px; overflow: hidden; }
   .progress-fill { height: 100%; background: var(--brand); border-radius: 3px; transition: width 0.4s ease; }
   .progress-meta { font-size: 12px; color: var(--text-2); margin-top: 6px; }
 
-  /* Export panel */
+  /* Export */
   .export-scope { display: flex; gap: 6px; margin-bottom: 16px; }
   .scope-opt { flex: 1; padding: 8px; font-size: 12px; font-weight: 500; text-align: center; border: 0.5px solid var(--border); border-radius: var(--radius); cursor: pointer; background: var(--bg); color: var(--text-2); transition: all 0.15s; }
   .scope-opt.active { background: var(--brand-50); color: var(--paid-color); border-color: var(--brand); }
@@ -211,6 +280,19 @@
   .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: var(--text); color: var(--bg); padding: 10px 18px; border-radius: var(--radius); font-size: 13px; font-weight: 500; z-index: 999; animation: toastIn 0.2s ease; white-space: nowrap; pointer-events: none; }
   @keyframes toastIn { from { opacity: 0; transform: translateX(-50%) translateY(8px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
 
+  /* Backup / Restore */
+  .backup-drop { border: 2px dashed var(--border-2); border-radius: var(--radius-lg); padding: 28px 20px; text-align: center; cursor: pointer; transition: all 0.15s; position: relative; }
+  .backup-drop:hover, .backup-drop.drag-over { border-color: var(--brand); background: var(--brand-50); }
+  .backup-drop input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+  .backup-drop-icon { font-size: 28px; margin-bottom: 8px; }
+  .backup-drop-label { font-size: 13px; font-weight: 500; color: var(--text-2); }
+  .backup-drop-sub { font-size: 11px; color: var(--text-3); margin-top: 4px; }
+  .backup-info { background: var(--bg-2); border-radius: var(--radius); padding: 12px 14px; margin-bottom: 16px; }
+  .backup-info-row { display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: var(--text-2); padding: 3px 0; }
+  .backup-info-row strong { color: var(--text); font-weight: 500; }
+  .backup-warning { background: #FAEEDA; border-radius: var(--radius); padding: 10px 14px; font-size: 12px; color: #854F0B; margin-top: 12px; display: flex; gap: 8px; align-items: flex-start; }
+  .backup-warning svg { width: 14px; height: 14px; flex-shrink: 0; margin-top: 1px; }
+
   /* Responsive */
   @media (max-width: 700px) {
     .table-head, .emp-row, .table-total { grid-template-columns: 36px 1fr 100px 90px 36px; }
@@ -227,42 +309,100 @@
 </head>
 <body>
 
-<div class="topbar">
-  <div class="topbar-left">
-    <div class="logo"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
-    <div><div class="app-name">Unravel Digital</div><div class="app-sub">Payroll tracker</div></div>
-  </div>
-  <div class="topbar-right">
-    <div class="year-tabs" id="year-tabs"></div>
-    <button class="btn" onclick="openExport()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
-      Export
-    </button>
-    <button class="btn btn-primary" onclick="openAddForm()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
-      Add employee
-    </button>
+<!-- ── LOCK SCREEN ── -->
+<div id="lock-screen">
+  <div class="lock-card">
+    <div class="lock-logo"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
+    <div class="lock-title">Unravel Digital</div>
+    <div class="lock-sub">Enter password to access payroll</div>
+    <div class="lock-dots" id="lock-dots"></div>
+    <div class="lock-input-wrap">
+      <input class="lock-input" type="password" id="lock-input" placeholder="Password" maxlength="64"
+        oninput="onLockInput()" onkeydown="onLockKey(event)" autocomplete="current-password" />
+      <button class="lock-eye" onclick="toggleLockEye()" id="lock-eye-btn" title="Show/hide password">
+        <svg id="eye-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+        </svg>
+      </button>
+    </div>
+    <div class="lock-error" id="lock-error"></div>
+    <button class="lock-btn" onclick="tryUnlock()">Unlock</button>
+    <div class="lock-hint">This app is for internal use only.</div>
+    <span class="change-pw-link" onclick="showChangePw()">Change password</span>
   </div>
 </div>
 
-<div class="container">
-  <div class="stats-grid" id="stats"></div>
-  <div class="filter-section">
-    <div class="filter-label">Cutoff period</div>
-    <div class="cutoff-chips" id="chips"></div>
+<!-- ── CHANGE PASSWORD (shown over lock screen) ── -->
+<div id="change-pw-screen" style="display:none; position:fixed; inset:0; z-index:1001; background:rgba(0,0,0,0.5); align-items:center; justify-content:center; padding:24px;">
+  <div class="lock-card" style="text-align:left;">
+    <div style="font-size:15px;font-weight:600;color:var(--text);margin-bottom:4px;">Change password</div>
+    <div style="font-size:13px;color:var(--text-2);margin-bottom:20px;">Enter your current password, then set a new one.</div>
+    <div class="field" style="margin-bottom:12px;width:100%;">
+      <label>Current password</label>
+      <input type="password" id="cp-current" class="lock-input" style="letter-spacing:0.05em;" placeholder="Current password" />
+    </div>
+    <div class="field" style="margin-bottom:12px;width:100%;">
+      <label>New password</label>
+      <input type="password" id="cp-new" class="lock-input" style="letter-spacing:0.05em;" placeholder="New password (min 4 chars)" />
+    </div>
+    <div class="field" style="margin-bottom:16px;width:100%;">
+      <label>Confirm new password</label>
+      <input type="password" id="cp-confirm" class="lock-input" style="letter-spacing:0.05em;" placeholder="Repeat new password" />
+    </div>
+    <div class="lock-error" id="cp-error"></div>
+    <div style="display:flex;gap:8px;margin-top:4px;">
+      <button class="lock-btn" style="flex:1;margin-bottom:0;" onclick="doChangePw()">Save new password</button>
+      <button onclick="hideChangePw()" style="padding:11px 16px;border-radius:var(--radius);border:0.5px solid var(--border-2);background:var(--bg-2);cursor:pointer;font-size:14px;font-weight:500;color:var(--text-2);">Cancel</button>
+    </div>
   </div>
-  <div class="table-card">
-    <div class="table-toolbar">
-      <div class="table-toolbar-title" id="toolbar-title">Employees</div>
-      <input class="search-input" type="text" placeholder="Search employees…" oninput="filterSearch(this.value)" />
+</div>
+
+<!-- ── APP ── -->
+<div id="app">
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="logo"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
+      <div><div class="app-name">Unravel Digital</div><div class="app-sub">Payroll tracker</div></div>
     </div>
-    <div class="table-head">
-      <div></div><div>Employee</div><div>Monthly salary</div><div>Per cutoff</div>
-      <div style="text-align:right;">Status</div><div></div>
+    <div class="topbar-right">
+      <div class="year-tabs" id="year-tabs"></div>
+      <button class="btn" onclick="openBackup()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+        Backup
+      </button>
+      <button class="btn" onclick="openExport()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+        Export
+      </button>
+      <button class="btn btn-primary" onclick="openAddForm()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+        Add employee
+      </button>
+      <button class="btn" onclick="lockApp()" title="Lock">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+        Lock
+      </button>
     </div>
-    <div id="emp-list"></div>
-    <div class="table-total" id="table-total"></div>
-    <div id="add-form-area"></div>
+  </div>
+  <div class="container">
+    <div class="stats-grid" id="stats"></div>
+    <div class="filter-section">
+      <div class="filter-label">Cutoff period</div>
+      <div class="cutoff-chips" id="chips"></div>
+    </div>
+    <div class="table-card">
+      <div class="table-toolbar">
+        <div class="table-toolbar-title" id="toolbar-title">Employees</div>
+        <input class="search-input" type="text" placeholder="Search employees…" oninput="filterSearch(this.value)" />
+      </div>
+      <div class="table-head">
+        <div></div><div>Employee</div><div>Monthly salary</div><div>Per cutoff</div>
+        <div style="text-align:right;">Status</div><div></div>
+      </div>
+      <div id="emp-list"></div>
+      <div class="table-total" id="table-total"></div>
+      <div id="add-form-area"></div>
+    </div>
   </div>
 </div>
 
@@ -271,36 +411,153 @@
 <div id="toast-container"></div>
 
 <script>
+// ── PASSWORD SYSTEM ──
+const DEFAULT_PW = 'unravel2026';
+const PW_KEY = 'udp_pw';
+const SESSION_KEY = 'udp_session';
+
+function getStoredPw() {
+  return localStorage.getItem(PW_KEY) || DEFAULT_PW;
+}
+function hashStr(s) {
+  // Simple but functional: store as-is (no server = no bcrypt, acceptable for internal tool)
+  // To upgrade: replace with a server-side check
+  return s;
+}
+
+function checkSession() {
+  // Session valid for 8 hours
+  const s = sessionStorage.getItem(SESSION_KEY);
+  if (!s) return false;
+  const ts = parseInt(s);
+  return (Date.now() - ts) < 8 * 60 * 60 * 1000;
+}
+function setSession() { sessionStorage.setItem(SESSION_KEY, Date.now().toString()); }
+function clearSession() { sessionStorage.removeItem(SESSION_KEY); }
+
+// Lock dots visual
+function renderDots(len) {
+  const max = 6;
+  document.getElementById('lock-dots').innerHTML =
+    Array.from({length: max}, (_,i) =>
+      `<div class="lock-dot${i < len ? ' filled' : ''}"></div>`
+    ).join('');
+}
+
+function onLockInput() {
+  const v = document.getElementById('lock-input').value;
+  renderDots(Math.min(v.length, 6));
+  document.getElementById('lock-error').textContent = '';
+  document.getElementById('lock-input').classList.remove('shake');
+}
+
+function toggleLockEye() {
+  const inp = document.getElementById('lock-input');
+  const icon = document.getElementById('eye-icon');
+  if (inp.type === 'password') {
+    inp.type = 'text';
+    icon.innerHTML = '<path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>';
+  } else {
+    inp.type = 'password';
+    icon.innerHTML = '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>';
+  }
+}
+
+function onLockKey(e) { if (e.key === 'Enter') tryUnlock(); }
+
+function tryUnlock() {
+  const val = document.getElementById('lock-input').value;
+  if (val === getStoredPw()) {
+    setSession();
+    document.getElementById('lock-screen').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    document.getElementById('lock-input').value = '';
+    renderDots(0);
+    render();
+  } else {
+    const inp = document.getElementById('lock-input');
+    inp.classList.remove('shake');
+    void inp.offsetWidth; // reflow
+    inp.classList.add('shake');
+    document.getElementById('lock-error').textContent = 'Incorrect password. Try again.';
+    inp.value = '';
+    renderDots(0);
+    setTimeout(() => inp.classList.remove('shake'), 400);
+  }
+}
+
+function lockApp() {
+  clearSession();
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('lock-screen').style.display = 'flex';
+  setTimeout(() => document.getElementById('lock-input').focus(), 100);
+}
+
+function showChangePw() {
+  const el = document.getElementById('change-pw-screen');
+  el.style.display = 'flex';
+  setTimeout(() => document.getElementById('cp-current').focus(), 50);
+}
+function hideChangePw() {
+  document.getElementById('change-pw-screen').style.display = 'none';
+  ['cp-current','cp-new','cp-confirm'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('cp-error').textContent = '';
+}
+function doChangePw() {
+  const cur = document.getElementById('cp-current').value;
+  const nw = document.getElementById('cp-new').value;
+  const cf = document.getElementById('cp-confirm').value;
+  const err = document.getElementById('cp-error');
+  if (cur !== getStoredPw()) { err.textContent = 'Current password is incorrect.'; return; }
+  if (nw.length < 4) { err.textContent = 'New password must be at least 4 characters.'; return; }
+  if (nw !== cf) { err.textContent = 'Passwords do not match.'; return; }
+  localStorage.setItem(PW_KEY, nw);
+  hideChangePw();
+  toast('Password updated successfully');
+}
+
+// Auto-unlock if session is still valid
+window.addEventListener('DOMContentLoaded', () => {
+  renderDots(0);
+  if (checkSession()) {
+    document.getElementById('lock-screen').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    render();
+  } else {
+    setTimeout(() => document.getElementById('lock-input').focus(), 100);
+  }
+});
+
+// ── PAYROLL DATA ──
 const CUTOFFS = ['Jan 15','Jan 30','Feb 15','Feb 28','Mar 15','Mar 30','Apr 15','Apr 30','May 15','May 30','Jun 15','Jun 30','Jul 15','Jul 30','Aug 15','Aug 30','Sep 15','Sep 30','Oct 15','Oct 30','Nov 15','Nov 30','Dec 15','Dec 30'];
 
-// Seed data — names matched from sheet QR cards
 const SEED = [
-  {name:'Heinrich Picar',       role:'Operations',  salary:35000, email:'', acct:''},
-  {name:'Carlo Baliber',        role:'',            salary:60000, email:'', acct:'·9204'},
-  {name:'David Gealogo',        role:'',            salary:30000, email:'', acct:'·9388'},
-  {name:'Jershela Akil',        role:'',            salary:30000, email:'', acct:'·4131'},
-  {name:'Jasper Saez',          role:'',            salary:15000, email:'', acct:'·9195'},
-  {name:'Jose Paolo Noval',     role:'',            salary:40000, email:'', acct:'·0406'},
-  {name:'Ron Angelo Rodriguez', role:'',            salary:25000, email:'', acct:'·2659'},
-  {name:'Mon Agner',            role:'',            salary:30000, email:'', acct:'·0643'},
-  {name:'Warren Villapando',    role:'',            salary:20000, email:'', acct:'·4772'},
-  {name:'Nio Martinez',         role:'',            salary:50000, email:'', acct:'·5587'},
-  {name:'Karen Jean Bedania',   role:'',            salary:40000, email:'', acct:'·3762'},
-  {name:'Angelo Kyle Olaes',    role:'',            salary:25000, email:'', acct:'·4364'},
-  {name:'Mark Lester Pamintuan',role:'',            salary:20000, email:'', acct:'·3799'},
-  {name:'Reginald Dave Retodo', role:'',            salary:20000, email:'', acct:'·4855'},
-  {name:'Rizzele Marie Olaes',  role:'',            salary:20000, email:'', acct:'·8252'},
-  {name:'Kenneth Todoc',        role:'',            salary:20000, email:'', acct:'·3812'},
-  {name:'Shaira Canaling',      role:'',            salary:15000, email:'', acct:'·7973'},
-  {name:'Mariel',               role:'',            salary:15000, email:'', acct:''},
-  {name:'Juan Rafael Galang',   role:'',            salary:25000, email:'', acct:'·1202'},
-  {name:'Miguel Lianza',        role:'',            salary:20000, email:'', acct:'·2382'},
-  {name:'Joshua Mari Cueto',    role:'',            salary:20000, email:'', acct:'·4329'},
+  {name:'Heinrich Picar',        role:'Operations', salary:35000, email:'', acct:''},
+  {name:'Carlo Baliber',         role:'',           salary:60000, email:'', acct:'·9204'},
+  {name:'David Gealogo',         role:'',           salary:30000, email:'', acct:'·9388'},
+  {name:'Jershela Akil',         role:'',           salary:30000, email:'', acct:'·4131'},
+  {name:'Jasper Saez',           role:'',           salary:15000, email:'', acct:'·9195'},
+  {name:'Jose Paolo Noval',      role:'',           salary:40000, email:'', acct:'·0406'},
+  {name:'Ron Angelo Rodriguez',  role:'',           salary:25000, email:'', acct:'·2659'},
+  {name:'Mon Agner',             role:'',           salary:30000, email:'', acct:'·0643'},
+  {name:'Warren Villapando',     role:'',           salary:20000, email:'', acct:'·4772'},
+  {name:'Nio Martinez',          role:'',           salary:50000, email:'', acct:'·5587'},
+  {name:'Karen Jean Bedania',    role:'',           salary:40000, email:'', acct:'·3762'},
+  {name:'Angelo Kyle Olaes',     role:'',           salary:25000, email:'', acct:'·4364'},
+  {name:'Mark Lester Pamintuan', role:'',           salary:20000, email:'', acct:'·3799'},
+  {name:'Reginald Dave Retodo',  role:'',           salary:20000, email:'', acct:'·4855'},
+  {name:'Rizzele Marie Olaes',   role:'',           salary:20000, email:'', acct:'·8252'},
+  {name:'Kenneth Todoc',         role:'',           salary:20000, email:'', acct:'·3812'},
+  {name:'Shaira Canaling',       role:'',           salary:15000, email:'', acct:'·7973'},
+  {name:'Mariel',                role:'',           salary:15000, email:'', acct:''},
+  {name:'Juan Rafael Galang',    role:'',           salary:25000, email:'', acct:'·1202'},
+  {name:'Miguel Lianza',         role:'',           salary:20000, email:'', acct:'·2382'},
+  {name:'Joshua Mari Cueto',     role:'',           salary:20000, email:'', acct:'·4329'},
   {name:'Reinier Kristoffe Gozo',role:'',           salary:20000, email:'', acct:'·1207'},
-  {name:'Francis Jun Dait',     role:'',            salary:15000, email:'', acct:'·3422'},
-  {name:'Rafael Tapang',        role:'',            salary:15000, email:'', acct:'·3774'},
-  {name:'Carlo Barrantes',      role:'',            salary:15000, email:'', acct:'·7865'},
-  {name:'Almon Ray Agner',      role:'',            salary:20000, email:'', acct:'·0643'},
+  {name:'Francis Jun Dait',      role:'',           salary:15000, email:'', acct:'·3422'},
+  {name:'Rafael Tapang',         role:'',           salary:15000, email:'', acct:'·3774'},
+  {name:'Carlo Barrantes',       role:'',           salary:15000, email:'', acct:'·7865'},
+  {name:'Almon Ray Agner',       role:'',           salary:20000, email:'', acct:'·0643'},
 ];
 
 const LATE_START = ['Mark Lester Pamintuan','Reginald Dave Retodo','Rizzele Marie Olaes','Kenneth Todoc','Shaira Canaling','Mariel','Miguel Lianza','Rafael Tapang'];
@@ -322,10 +579,7 @@ function mkData() {
   return d;
 }
 
-function load() {
-  try { const r = localStorage.getItem('udp_v4'); if (r) return JSON.parse(r); } catch(e) {}
-  return mkData();
-}
+function load() { try { const r=localStorage.getItem('udp_v4'); if(r) return JSON.parse(r); } catch(e) {} return mkData(); }
 function save() { try { localStorage.setItem('udp_v4', JSON.stringify(DB)); } catch(e) {} }
 
 let DB = load();
@@ -359,32 +613,30 @@ function renderChips() {
 }
 
 function renderStats() {
-  const emps = DB[YR]||[];
-  const totSal = emps.reduce((s,e)=>s+e.salary,0);
-  const totCut = emps.reduce((s,e)=>s+(e.salary/2),0);
-  const paidAmt = emps.filter(e=>e.paid[CUTOFF]).reduce((s,e)=>s+(e.salary/2),0);
-  const paidN = emps.filter(e=>e.paid[CUTOFF]).length;
-  document.getElementById('stats').innerHTML = `
+  const emps=DB[YR]||[];
+  const totSal=emps.reduce((s,e)=>s+e.salary,0);
+  const totCut=emps.reduce((s,e)=>s+(e.salary/2),0);
+  const paidAmt=emps.filter(e=>e.paid[CUTOFF]).reduce((s,e)=>s+(e.salary/2),0);
+  const paidN=emps.filter(e=>e.paid[CUTOFF]).length;
+  document.getElementById('stats').innerHTML=`
     <div class="stat-card"><div class="stat-label">Total employees</div><div class="stat-value">${emps.length}</div></div>
     <div class="stat-card"><div class="stat-label">Monthly payroll</div><div class="stat-value">${fmt(totSal)}</div></div>
     <div class="stat-card"><div class="stat-label">Paid — ${CUTOFF}</div><div class="stat-value accent">${fmt(paidAmt)}</div></div>
     <div class="stat-card"><div class="stat-label">Pending — ${CUTOFF}</div><div class="stat-value">${fmt(totCut-paidAmt)}</div></div>
-    <div class="stat-card"><div class="stat-label">Paid count</div><div class="stat-value">${paidN}<span style="font-size:14px;font-weight:400;color:var(--text-2)"> / ${emps.length}</span></div></div>
-  `;
+    <div class="stat-card"><div class="stat-label">Paid count</div><div class="stat-value">${paidN}<span style="font-size:14px;font-weight:400;color:var(--text-2)"> / ${emps.length}</span></div></div>`;
 }
 
 function renderTable() {
-  const emps = DB[YR]||[];
-  const q = SEARCH.toLowerCase();
-  const filtered = q ? emps.filter(e=>e.name.toLowerCase().includes(q)) : emps;
-  document.getElementById('toolbar-title').textContent = `${filtered.length} employee${filtered.length!==1?'s':''}`;
-  document.getElementById('emp-list').innerHTML = filtered.map((emp) => {
-    const i = emps.indexOf(emp);
-    const cut = emp.salary/2;
-    const paid = emp.paid[CUTOFF];
-    const qrHtml = emp.qr
-      ? `<img class="qr-thumb" src="${emp.qr}" onclick="viewQR(${i})" title="View QR — ${emp.name}" />`
-      : `<div class="qr-placeholder" onclick="openDetail(${i})" title="Upload QR">+</div>`;
+  const emps=DB[YR]||[];
+  const q=SEARCH.toLowerCase();
+  const filtered=q?emps.filter(e=>e.name.toLowerCase().includes(q)):emps;
+  document.getElementById('toolbar-title').textContent=`${filtered.length} employee${filtered.length!==1?'s':''}`;
+  document.getElementById('emp-list').innerHTML=filtered.map(emp=>{
+    const i=emps.indexOf(emp);
+    const cut=emp.salary/2; const paid=emp.paid[CUTOFF];
+    const qrHtml=emp.qr
+      ?`<img class="qr-thumb" src="${emp.qr}" onclick="viewQR(${i})" title="View QR — ${emp.name}" />`
+      :`<div class="qr-placeholder" onclick="openDetail(${i})" title="Upload QR">+</div>`;
     return `<div class="emp-row">
       <div>${qrHtml}</div>
       <div class="emp-name-cell" onclick="openDetail(${i})">
@@ -397,9 +649,9 @@ function renderTable() {
       <div style="display:flex;justify-content:center;"><button class="del-btn" onclick="confirmDel(${i})">×</button></div>
     </div>`;
   }).join('');
-  const totSal = emps.reduce((s,e)=>s+e.salary,0);
-  const totCut = emps.reduce((s,e)=>s+(e.salary/2),0);
-  document.getElementById('table-total').innerHTML = `
+  const totSal=emps.reduce((s,e)=>s+e.salary,0);
+  const totCut=emps.reduce((s,e)=>s+(e.salary/2),0);
+  document.getElementById('table-total').innerHTML=`
     <div></div><div class="lbl">${emps.length} employees</div>
     <div>${fmt(totSal)}</div><div>${fmt(totCut)}</div><div></div><div></div>`;
   renderAddForm();
@@ -417,35 +669,34 @@ function renderAddForm() {
         <button class="btn btn-sm" onclick="cancelAdd()">Cancel</button>
       </div>
     </div>` : '';
-  if (ADDING) setTimeout(()=>{ const el=document.getElementById('f-name'); if(el) el.focus(); },50);
+  if (ADDING) setTimeout(()=>{const el=document.getElementById('f-name');if(el)el.focus();},50);
 }
 
-function switchYear(y) { YR=y; render(); }
-function setCutoff(c) { CUTOFF=c; renderChips(); renderStats(); renderTable(); }
-function filterSearch(v) { SEARCH=v; renderTable(); }
-function openAddForm() { ADDING=true; renderAddForm(); window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'}); }
-function cancelAdd() { ADDING=false; renderAddForm(); }
+function switchYear(y){YR=y;render();}
+function setCutoff(c){CUTOFF=c;renderChips();renderStats();renderTable();}
+function filterSearch(v){SEARCH=v;renderTable();}
+function openAddForm(){ADDING=true;renderAddForm();window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'});}
+function cancelAdd(){ADDING=false;renderAddForm();}
 
 function addEmp() {
   const name=(document.getElementById('f-name').value||'').trim();
   const role=(document.getElementById('f-role').value||'').trim();
   const salary=parseInt(document.getElementById('f-salary').value)||0;
   const email=(document.getElementById('f-email').value||'').trim();
-  if (!name||salary<1) { toast('Name and salary are required'); return; }
-  if (!DB[YR]) DB[YR]=[];
+  if(!name||salary<1){toast('Name and salary are required');return;}
+  if(!DB[YR])DB[YR]=[];
   DB[YR].push({name,role,salary,email,acct:'',paid:{},qr:null});
-  save(); ADDING=false; render();
-  toast(`${name} added`);
+  save();ADDING=false;render();toast(`${name} added`);
 }
 
 function quickToggle(i) {
-  DB[YR][i].paid[CUTOFF] = !DB[YR][i].paid[CUTOFF];
-  save(); renderStats(); renderTable();
+  DB[YR][i].paid[CUTOFF]=!DB[YR][i].paid[CUTOFF];
+  save();renderStats();renderTable();
   toast(DB[YR][i].paid[CUTOFF]?'Marked as paid':'Marked as pending');
 }
 
 function confirmDel(i) {
-  const emp = DB[YR][i];
+  const emp=DB[YR][i];
   showOverlay(`<div class="panel" style="width:340px;" onclick="event.stopPropagation()">
     <div class="panel-body confirm-body">
       <div class="confirm-icon">🗑</div>
@@ -457,16 +708,11 @@ function confirmDel(i) {
       </div>
     </div></div>`);
 }
-function doDelete(i) {
-  const name=DB[YR][i].name; DB[YR].splice(i,1);
-  save(); closeOverlay(); render(); toast(`${name} removed`);
-}
+function doDelete(i){const name=DB[YR][i].name;DB[YR].splice(i,1);save();closeOverlay();render();toast(`${name} removed`);}
 
-// ── QR handling ──
 function viewQR(i) {
-  const emp = DB[YR][i];
-  if (!emp.qr) return;
-  document.getElementById('qr-viewer-area').innerHTML = `
+  const emp=DB[YR][i]; if(!emp.qr)return;
+  document.getElementById('qr-viewer-area').innerHTML=`
     <div class="qr-viewer" onclick="closeQRViewer()">
       <img src="${emp.qr}" alt="${emp.name} QR" />
       <div class="qr-viewer-name">${emp.name}</div>
@@ -474,53 +720,33 @@ function viewQR(i) {
       <div class="qr-viewer-hint">Tap anywhere to close</div>
     </div>`;
 }
-function closeQRViewer() { document.getElementById('qr-viewer-area').innerHTML=''; }
+function closeQRViewer(){document.getElementById('qr-viewer-area').innerHTML='';}
 
 function handleQRUpload(i, input) {
-  const file = input.files[0];
-  if (!file) return;
-  if (!file.type.startsWith('image/')) { toast('Please upload an image file'); return; }
-  const reader = new FileReader();
-  reader.onload = e => {
-    DB[YR][i].qr = e.target.result;
-    save(); renderTable();
-    // re-open detail if it's open
-    if (document.getElementById('overlay').innerHTML) openDetail(i);
-    toast('QR uploaded');
-  };
+  const file=input.files[0]; if(!file)return;
+  if(!file.type.startsWith('image/')){toast('Please upload an image file');return;}
+  const reader=new FileReader();
+  reader.onload=e=>{DB[YR][i].qr=e.target.result;save();renderTable();if(document.getElementById('overlay').innerHTML)openDetail(i);toast('QR uploaded');};
   reader.readAsDataURL(file);
 }
+function removeQR(i){DB[YR][i].qr=null;save();renderTable();openDetail(i);toast('QR removed');}
 
-function removeQR(i) {
-  DB[YR][i].qr = null;
-  save(); renderTable();
-  openDetail(i);
-  toast('QR removed');
-}
-
-// ── Detail panel ──
-function openDetail(i) { renderDetail(i); }
-
+function openDetail(i){renderDetail(i);}
 function renderDetail(i) {
-  const emp = DB[YR][i];
-  const cut = emp.salary/2;
-  const paidC = CUTOFFS.filter(c=>emp.paid[c]).length;
-  const pct = Math.round((paidC/CUTOFFS.length)*100);
-  const totalPaid = paidC*cut;
-
-  const qrBlock = emp.qr
-    ? `<div class="qr-card">
-        <div class="qr-image-wrap">
-          <img class="qr-display" src="${emp.qr}" alt="QR" onclick="viewQR(${i})" title="Click to enlarge" />
-        </div>
+  const emp=DB[YR][i]; const cut=emp.salary/2;
+  const paidC=CUTOFFS.filter(c=>emp.paid[c]).length;
+  const pct=Math.round((paidC/CUTOFFS.length)*100);
+  const totalPaid=paidC*cut;
+  const qrBlock=emp.qr
+    ?`<div class="qr-card">
+        <div><img class="qr-display" src="${emp.qr}" alt="QR" onclick="viewQR(${i})" title="Click to enlarge" /></div>
         <div class="qr-info">
           <div class="qr-bank-name">GOtyme Bank · InstaPay</div>
           <div class="qr-acct">${emp.acct||'Account on QR'}</div>
           <div class="qr-actions">
             <button class="btn btn-primary btn-sm qr-upload-btn">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
-              Replace QR
-              <input type="file" accept="image/*" onchange="handleQRUpload(${i}, this)" />
+              Replace QR<input type="file" accept="image/*" onchange="handleQRUpload(${i},this)" />
             </button>
             <button class="btn btn-ghost btn-sm" onclick="viewQR(${i})">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>
@@ -530,19 +756,18 @@ function renderDetail(i) {
           </div>
         </div>
       </div>`
-    : `<div class="qr-card" style="justify-content:center;flex-direction:column;align-items:center;gap:12px;padding:24px;">
+    :`<div class="qr-card" style="justify-content:center;flex-direction:column;align-items:center;gap:12px;padding:24px;">
         <label style="cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:10px;">
           <div class="qr-empty" style="width:100px;height:100px;">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h.01M14 17h3M17 14v3M20 17v3M20 14h.01"/></svg>
             <span class="qr-empty-label">Upload QR</span>
           </div>
           <span style="font-size:12px;color:var(--text-2);">Click to upload GOtyme InstaPay QR</span>
-          <input type="file" accept="image/*" style="display:none;" onchange="handleQRUpload(${i}, this)" />
+          <input type="file" accept="image/*" style="display:none;" onchange="handleQRUpload(${i},this)" />
         </label>
       </div>`;
-
-  const items = CUTOFFS.map(c => {
-    const p = emp.paid[c];
+  const items=CUTOFFS.map(c=>{
+    const p=emp.paid[c];
     return `<div class="cutoff-item${p?' is-paid':''}">
       <div class="cutoff-left"><div class="cutoff-dot"></div><span class="cutoff-name">${c}</span></div>
       <div class="cutoff-right">
@@ -551,33 +776,20 @@ function renderDetail(i) {
       </div>
     </div>`;
   }).join('');
-
   showOverlay(`<div class="panel" onclick="event.stopPropagation()">
-    <div class="panel-header">
-      <div class="panel-title">Employee details</div>
-      <button class="panel-close" onclick="closeOverlay()">×</button>
-    </div>
+    <div class="panel-header"><div class="panel-title">Employee details</div><button class="panel-close" onclick="closeOverlay()">×</button></div>
     <div class="panel-body">
       <div class="detail-top">
         <div class="detail-avatar">${ini(emp.name)}</div>
-        <div class="detail-info">
-          <div class="detail-name">${emp.name}</div>
-          <div class="detail-meta">${emp.role||'No role set'} · ${fmt(emp.salary)}/mo · ${fmt(cut)}/cutoff</div>
-        </div>
+        <div><div class="detail-name">${emp.name}</div><div class="detail-meta">${emp.role||'No role set'} · ${fmt(emp.salary)}/mo · ${fmt(cut)}/cutoff</div></div>
       </div>
-
-      <div class="qr-section">
-        <div class="section-title">GOtyme InstaPay QR</div>
-        ${qrBlock}
-      </div>
-
+      <div class="qr-section"><div class="section-title">GOtyme InstaPay QR</div>${qrBlock}</div>
       <div class="edit-grid">
         <div class="edit-field"><label class="edit-label">Full name</label><input class="edit-input" type="text" value="${emp.name}" onchange="updateEmp(${i},'name',this.value)" /></div>
         <div class="edit-field"><label class="edit-label">Role</label><input class="edit-input" type="text" value="${emp.role||''}" placeholder="e.g. Developer" onchange="updateEmp(${i},'role',this.value)" /></div>
         <div class="edit-field"><label class="edit-label">Monthly salary (₱)</label><input class="edit-input" type="number" value="${emp.salary}" onchange="updateEmp(${i},'salary',parseInt(this.value)||0)" /></div>
         <div class="edit-field"><label class="edit-label">Account (last 4)</label><input class="edit-input" type="text" value="${emp.acct||''}" placeholder="e.g. ·1234" onchange="updateEmp(${i},'acct',this.value)" /></div>
       </div>
-
       <div class="section-title">Payment history — ${YR}</div>
       <div class="cutoff-list">${items}</div>
       <div class="progress-wrap">
@@ -592,16 +804,11 @@ function renderDetail(i) {
   </div>`);
 }
 
-function updateEmp(i, field, val) {
-  DB[YR][i][field]=val; save(); renderStats(); renderTable();
-}
-function toggleDetail(i, c) {
-  DB[YR][i].paid[c]=!DB[YR][i].paid[c]; save(); renderStats(); renderTable(); renderDetail(i);
-}
+function updateEmp(i,field,val){DB[YR][i][field]=val;save();renderStats();renderTable();}
+function toggleDetail(i,c){DB[YR][i].paid[c]=!DB[YR][i].paid[c];save();renderStats();renderTable();renderDetail(i);}
 
-// ── Export ──
 function openExport() {
-  _exportScope='cutoff'; _exportFmt='csv';
+  _exportScope='cutoff';_exportFmt='csv';
   showOverlay(`<div class="panel" style="width:440px;" onclick="event.stopPropagation()">
     <div class="panel-header"><div class="panel-title">Export payroll data</div><button class="panel-close" onclick="closeOverlay()">×</button></div>
     <div class="panel-body">
@@ -630,49 +837,177 @@ function openExport() {
     </div>
   </div>`);
 }
-function setExpScope(s) { _exportScope=s; ['cutoff','year','all'].forEach(x=>{const el=document.getElementById('sc-'+x);if(el)el.className='scope-opt'+(x===s?' active':'');}); }
-function setExpFmt(f) { _exportFmt=f; ['csv','json'].forEach(x=>{const el=document.getElementById('ef-'+x);if(el)el.className='export-option'+(x===f?' active':'');}); }
+function setExpScope(s){_exportScope=s;['cutoff','year','all'].forEach(x=>{const el=document.getElementById('sc-'+x);if(el)el.className='scope-opt'+(x===s?' active':'');});}
+function setExpFmt(f){_exportFmt=f;['csv','json'].forEach(x=>{const el=document.getElementById('ef-'+x);if(el)el.className='export-option'+(x===f?' active':'');});}
 
 function doExport() {
-  let content, filename;
-  if (_exportFmt==='csv') {
-    if (_exportScope==='cutoff') {
+  let content,filename;
+  if(_exportFmt==='csv'){
+    if(_exportScope==='cutoff'){
       const emps=DB[YR]||[];
       const rows=[['Name','Role','Email','Account','Monthly Salary','Per Cutoff','Amount','Status','Cutoff','Year']];
       emps.forEach(e=>rows.push([e.name,e.role||'',e.email||'',e.acct||'',e.salary,e.salary/2,e.paid[CUTOFF]?e.salary/2:0,e.paid[CUTOFF]?'Paid':'Pending',CUTOFF,YR]));
-      content=rows.map(r=>r.map(c=>`"${c}"`).join(',')).join('\n'); filename=`payroll_${YR}_${CUTOFF.replace(' ','_')}.csv`;
-    } else if (_exportScope==='year') {
+      content=rows.map(r=>r.map(c=>`"${c}"`).join(',')).join('\n');filename=`payroll_${YR}_${CUTOFF.replace(' ','_')}.csv`;
+    } else if(_exportScope==='year'){
       const emps=DB[YR]||[];
       const header=['Name','Role','Email','Account','Monthly Salary',...CUTOFFS,'Total Paid (₱)','Total Pending (₱)'];
       const rows=[header];
       emps.forEach(e=>{const cut=e.salary/2;const paidAmt=CUTOFFS.filter(c=>e.paid[c]).length*cut;rows.push([e.name,e.role||'',e.email||'',e.acct||'',e.salary,...CUTOFFS.map(c=>e.paid[c]?'Paid':''),paidAmt,(cut*CUTOFFS.length)-paidAmt]);});
-      content=rows.map(r=>r.map(c=>`"${c}"`).join(',')).join('\n'); filename=`payroll_${YR}_full.csv`;
+      content=rows.map(r=>r.map(c=>`"${c}"`).join(',')).join('\n');filename=`payroll_${YR}_full.csv`;
     } else {
       const rows=[['Year','Name','Role','Email','Account','Monthly Salary','Cutoff','Status','Amount (₱)']];
       Object.entries(DB).forEach(([y,emps])=>emps.forEach(e=>CUTOFFS.forEach(c=>rows.push([y,e.name,e.role||'',e.email||'',e.acct||'',e.salary,c,e.paid[c]?'Paid':'Pending',e.salary/2]))));
-      content=rows.map(r=>r.map(c=>`"${c}"`).join(',')).join('\n'); filename=`payroll_all_data.csv`;
+      content=rows.map(r=>r.map(c=>`"${c}"`).join(',')).join('\n');filename=`payroll_all_data.csv`;
     }
   } else {
-    // JSON — include QR data too
-    const exportDB = _exportScope==='all' ? DB : {[YR]: DB[YR]||[]};
+    const exportDB=_exportScope==='all'?DB:{[YR]:DB[YR]||[]};
     content=JSON.stringify(exportDB,null,2);
     filename=_exportScope==='all'?`payroll_all_data.json`:_exportScope==='year'?`payroll_${YR}.json`:`payroll_${YR}_${CUTOFF.replace(' ','_')}.json`;
   }
   const blob=new Blob([content],{type:_exportFmt==='csv'?'text/csv':'application/json'});
-  const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=filename; a.click(); URL.revokeObjectURL(url);
-  closeOverlay(); toast(`Exported ${filename}`);
+  const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=filename;a.click();URL.revokeObjectURL(url);
+  closeOverlay();toast(`Exported ${filename}`);
 }
 
-function showOverlay(html) { document.getElementById('overlay').innerHTML=`<div class="overlay" onclick="closeOverlay()">${html}</div>`; }
-function closeOverlay() { document.getElementById('overlay').innerHTML=''; }
-function toast(msg) {
-  const id='t'+Date.now(); const c=document.getElementById('toast-container');
-  c.innerHTML=`<div class="toast" id="${id}">${msg}</div>`;
-  setTimeout(()=>{const el=document.getElementById(id);if(el)el.remove();},2200);
-}
-document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ closeOverlay(); closeQRViewer(); } });
+// ── BACKUP & RESTORE ──
+function openBackup() {
+  const emps2025 = (DB[2025]||[]).length;
+  const emps2026 = (DB[2026]||[]).length;
+  const qrCount = [...(DB[2025]||[]), ...(DB[2026]||[])].filter(e=>e.qr).length;
+  const sizeKB = Math.round(JSON.stringify(DB).length / 1024);
+  const lastBackup = localStorage.getItem('udp_last_backup');
+  const lastBackupStr = lastBackup ? new Date(parseInt(lastBackup)).toLocaleString() : 'Never';
 
-render();
+  showOverlay(`<div class="panel" style="width:460px;" onclick="event.stopPropagation()">
+    <div class="panel-header">
+      <div class="panel-title">Backup & Restore</div>
+      <button class="panel-close" onclick="closeOverlay()">×</button>
+    </div>
+    <div class="panel-body">
+
+      <div class="section-title" style="margin-bottom:10px;">Current data snapshot</div>
+      <div class="backup-info">
+        <div class="backup-info-row"><span>Employees (2025)</span><strong>${emps2025}</strong></div>
+        <div class="backup-info-row"><span>Employees (2026)</span><strong>${emps2026}</strong></div>
+        <div class="backup-info-row"><span>QR codes stored</span><strong>${qrCount}</strong></div>
+        <div class="backup-info-row"><span>Total backup size</span><strong>~${sizeKB} KB</strong></div>
+        <div class="backup-info-row"><span>Last backup</span><strong>${lastBackupStr}</strong></div>
+      </div>
+
+      <div class="section-title" style="margin-bottom:10px;">Save backup</div>
+      <p style="font-size:13px;color:var(--text-2);margin-bottom:12px;line-height:1.6;">
+        Downloads a <strong style="color:var(--text)">.json</strong> file containing all employees, payment history, and QR images. Keep this safe — you can restore from it on any browser or device.
+      </p>
+      <button class="btn btn-primary" style="width:100%;justify-content:center;padding:10px;" onclick="doBackupDownload()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:15px;height:15px;"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+        Download backup file
+      </button>
+
+      <div style="height:1px;background:var(--border);margin:20px 0;"></div>
+
+      <div class="section-title" style="margin-bottom:10px;">Restore from backup</div>
+      <div class="backup-drop" id="backup-drop"
+        ondragover="event.preventDefault();this.classList.add('drag-over')"
+        ondragleave="this.classList.remove('drag-over')"
+        ondrop="handleBackupDrop(event)">
+        <input type="file" accept=".json,application/json" onchange="handleBackupFile(this)" />
+        <div class="backup-drop-icon">📂</div>
+        <div class="backup-drop-label">Click to select or drag & drop backup file</div>
+        <div class="backup-drop-sub">Accepts .json files exported from this app</div>
+      </div>
+      <div class="backup-warning">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        Restoring will <strong>replace all current data</strong> with the backup. This cannot be undone. Download a backup first if you want to keep your current data.
+      </div>
+
+    </div>
+    <div class="panel-footer">
+      <button class="btn" onclick="closeOverlay()">Close</button>
+    </div>
+  </div>`);
+}
+
+function doBackupDownload() {
+  const payload = { version: 2, exportedAt: new Date().toISOString(), data: DB };
+  const content = JSON.stringify(payload, null, 2);
+  const filename = `payroll_backup_${new Date().toISOString().slice(0,10)}.json`;
+  const blob = new Blob([content], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href=url; a.download=filename; a.click();
+  URL.revokeObjectURL(url);
+  localStorage.setItem('udp_last_backup', Date.now().toString());
+  toast(`Backup saved: ${filename}`);
+  // refresh the panel to update last backup time
+  setTimeout(openBackup, 300);
+}
+
+function handleBackupDrop(e) {
+  e.preventDefault();
+  document.getElementById('backup-drop').classList.remove('drag-over');
+  const file = e.dataTransfer.files[0];
+  if (file) readBackupFile(file);
+}
+
+function handleBackupFile(input) {
+  const file = input.files[0];
+  if (file) readBackupFile(file);
+}
+
+function readBackupFile(file) {
+  if (!file.name.endsWith('.json') && file.type !== 'application/json') {
+    toast('Please select a valid .json backup file'); return;
+  }
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const parsed = JSON.parse(e.target.result);
+      // Accept both raw DB format and wrapped { version, data } format
+      const restored = parsed.data || parsed;
+      if (!restored[2025] && !restored[2026]) throw new Error('Invalid backup format');
+      confirmRestore(restored);
+    } catch(err) {
+      toast('Invalid backup file — could not read data');
+    }
+  };
+  reader.readAsText(file);
+}
+
+function confirmRestore(restoredData) {
+  closeOverlay();
+  const empCount = [...(restoredData[2025]||[]), ...(restoredData[2026]||[])].length;
+  const qrCount = [...(restoredData[2025]||[]), ...(restoredData[2026]||[])].filter(e=>e.qr).length;
+  showOverlay(`<div class="panel" style="width:380px;" onclick="event.stopPropagation()">
+    <div class="panel-body confirm-body">
+      <div class="confirm-icon">♻️</div>
+      <div class="confirm-title">Restore this backup?</div>
+      <div class="confirm-msg">
+        The backup contains <strong>${empCount} employee records</strong> and <strong>${qrCount} QR images</strong>.
+        <br><br>
+        Your current data will be <strong>permanently replaced</strong>. This cannot be undone.
+      </div>
+      <div class="confirm-actions">
+        <button class="btn btn-primary" onclick="doRestore(${encodeRestoreData(restoredData)})">Yes, restore</button>
+        <button class="btn" onclick="closeOverlay()">Cancel</button>
+      </div>
+    </div>
+  </div>`);
+}
+
+// Store pending restore data temporarily to avoid inline JSON issues
+let _pendingRestore = null;
+function encodeRestoreData(data) { _pendingRestore = data; return ''; }
+function doRestore() {
+  if (!_pendingRestore) return;
+  DB = _pendingRestore; _pendingRestore = null;
+  save(); closeOverlay(); render();
+  toast('Backup restored successfully');
+}
+
+function showOverlay(html){document.getElementById('overlay').innerHTML=`<div class="overlay" onclick="closeOverlay()">${html}</div>`;}
+function closeOverlay(){document.getElementById('overlay').innerHTML='';}
+function toast(msg){const id='t'+Date.now();const c=document.getElementById('toast-container');c.innerHTML=`<div class="toast" id="${id}">${msg}</div>`;setTimeout(()=>{const el=document.getElementById(id);if(el)el.remove();},2200);}
+
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeOverlay();closeQRViewer();}});
 </script>
 </body>
 </html>
