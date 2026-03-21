@@ -4,26 +4,27 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Unravel Digital — Payroll</title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%231D9E75'/><path d='M38 25v50l34-25z' fill='white'/></svg>" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23111111'/><path d='M30 50a15 15 0 1 1 15 15a15 15 0 1 0 15 -15a15 15 0 0 0-15-15a15 15 0 0 1-15 15z' fill='none' stroke='white' stroke-width='7'/></svg>" />
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
-    --brand: #1D9E75; --brand-50: #E1F5EE; --brand-dark: #085041;
-    --paid-bg: #EAF3DE; --paid-color: #3B6D11; --paid-border: #97C459;
-    --danger: #E24B4A; --danger-bg: #FCEBEB;
-    --bg: #ffffff; --bg-2: #f6f6f4; --bg-3: #f0efed;
-    --text: #1a1a18; --text-2: #6b6b67; --text-3: #9b9b96;
-    --border: rgba(0,0,0,0.12); --border-2: rgba(0,0,0,0.22);
+    --brand: #111111; --brand-50: #f0f0f0; --brand-dark: #000000;
+    --paid-bg: #f0f0f0; --paid-color: #111111; --paid-border: #cccccc;
+    --danger: #d03030; --danger-bg: #fceaea;
+    --bg: #ffffff; --bg-2: #f7f7f7; --bg-3: #efefef;
+    --text: #111111; --text-2: #666666; --text-3: #999999;
+    --border: rgba(0,0,0,0.10); --border-2: rgba(0,0,0,0.20);
     --radius: 8px; --radius-lg: 12px; --radius-xl: 16px;
+    --accent: #111111;
   }
   @media (prefers-color-scheme: dark) {
     :root {
-      --bg: #1a1a18; --bg-2: #222220; --bg-3: #2a2a28;
-      --text: #f0efe8; --text-2: #a0a09a; --text-3: #686864;
-      --border: rgba(255,255,255,0.1); --border-2: rgba(255,255,255,0.2);
-      --brand-50: #04342C; --brand-dark: #9FE1CB;
-      --paid-bg: #173404; --paid-color: #97C459; --paid-border: #3B6D11;
-      --danger-bg: #501313;
+      --bg: #111111; --bg-2: #1a1a1a; --bg-3: #0a0a0a;
+      --text: #f0f0f0; --text-2: #999999; --text-3: #666666;
+      --border: rgba(255,255,255,0.10); --border-2: rgba(255,255,255,0.18);
+      --brand: #ffffff; --brand-50: #1a1a1a; --brand-dark: #f0f0f0;
+      --paid-bg: #1a1a1a; --paid-color: #e0e0e0; --paid-border: #333333;
+      --danger-bg: #3d1111; --accent: #ffffff;
     }
   }
   body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; background: var(--bg-3); color: var(--text); min-height: 100vh; font-size: 14px; line-height: 1.5; }
@@ -32,7 +33,7 @@
   #lock-screen { position: fixed; inset: 0; z-index: 1000; background: var(--bg-3); display: flex; align-items: center; justify-content: center; padding: 24px; }
   .lock-card { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-xl); padding: 40px 36px; width: 100%; max-width: 380px; text-align: center; }
   .lock-logo { width: 52px; height: 52px; border-radius: 14px; background: var(--brand); display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; }
-  .lock-logo svg { width: 24px; height: 24px; fill: white; }
+  .lock-logo svg { width: 24px; height: 24px; color: white; }
   .lock-title { font-size: 18px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
   .lock-sub { font-size: 13px; color: var(--text-2); margin-bottom: 28px; }
   .lock-input-wrap { position: relative; margin-bottom: 12px; }
@@ -57,7 +58,7 @@
   .topbar { background: var(--bg); border-bottom: 0.5px solid var(--border); padding: 0 24px; height: 56px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
   .topbar-left { display: flex; align-items: center; gap: 12px; }
   .logo { width: 32px; height: 32px; border-radius: 8px; background: var(--brand); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-  .logo svg { width: 16px; height: 16px; fill: white; }
+  .logo svg { width: 16px; height: 16px; color: white; }
   .app-name { font-size: 15px; font-weight: 600; color: var(--text); }
   .app-sub { font-size: 12px; color: var(--text-2); }
   .topbar-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
@@ -66,7 +67,7 @@
   .sync-pill { display: flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 500; border: 0.5px solid var(--border); background: var(--bg-2); color: var(--text-2); }
   .sync-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--text-3); flex-shrink: 0; }
   .sync-pill.synced .sync-dot { background: var(--brand); }
-  .sync-pill.syncing .sync-dot { background: #EF9F27; animation: pulse 1s infinite; }
+  .sync-pill.syncing .sync-dot { background: var(--text-2); animation: pulse 1s infinite; }
   .sync-pill.error .sync-dot { background: var(--danger); }
   @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
 
@@ -90,14 +91,14 @@
   .stat-card { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 16px 18px; }
   .stat-label { font-size: 11px; font-weight: 500; color: var(--text-2); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; }
   .stat-value { font-size: 22px; font-weight: 600; color: var(--text); }
-  .stat-value.accent { color: var(--brand); }
+  .stat-value.accent { color: var(--text); font-weight: 700; }
 
   .filter-section { margin-bottom: 20px; }
   .filter-label { font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-3); margin-bottom: 8px; }
   .cutoff-chips { display: flex; flex-wrap: wrap; gap: 6px; }
   .chip { padding: 4px 11px; font-size: 12px; font-weight: 500; border-radius: 20px; border: 0.5px solid var(--border); background: var(--bg); color: var(--text-2); cursor: pointer; transition: all 0.15s; white-space: nowrap; }
   .chip:hover:not(.active) { background: var(--bg-2); }
-  .chip.active { background: var(--brand-50); color: var(--paid-color); border-color: var(--brand); }
+  .chip.active { background: var(--brand); color: var(--bg); border-color: var(--brand); }
 
   .table-card { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-xl); overflow: hidden; }
   .table-toolbar { padding: 14px 18px; border-bottom: 0.5px solid var(--border); display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
@@ -203,7 +204,7 @@
 
   .export-scope { display: flex; gap: 6px; margin-bottom: 16px; }
   .scope-opt { flex: 1; padding: 8px; font-size: 12px; font-weight: 500; text-align: center; border: 0.5px solid var(--border); border-radius: var(--radius); cursor: pointer; background: var(--bg); color: var(--text-2); transition: all 0.15s; }
-  .scope-opt.active { background: var(--brand-50); color: var(--paid-color); border-color: var(--brand); }
+  .scope-opt.active { background: var(--brand); color: var(--bg); border-color: var(--brand); }
   .export-option { display: flex; align-items: center; gap: 14px; padding: 13px 14px; margin-bottom: 8px; border: 0.5px solid var(--border); border-radius: var(--radius-lg); cursor: pointer; transition: all 0.15s; }
   .export-option:hover { background: var(--bg-2); }
   .export-option.active { border-color: var(--brand); background: var(--brand-50); }
@@ -242,7 +243,7 @@
 <!-- LOCK SCREEN -->
 <div id="lock-screen">
   <div class="lock-card">
-    <div class="lock-logo"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
+    <div class="lock-logo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 12a5 5 0 1 1 5 5 5 5 0 1 0 5-5 5 5 0 0 0-5-5 5 5 0 0 1-5 5z"/></svg></div>
     <div class="lock-title">Unravel Digital</div>
     <div class="lock-sub">Enter password to access payroll</div>
     <div class="lock-dots" id="lock-dots"></div>
@@ -282,7 +283,7 @@
 <div id="app">
   <div class="topbar">
     <div class="topbar-left">
-      <div class="logo"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
+      <div class="logo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 12a5 5 0 1 1 5 5 5 5 0 1 0 5-5 5 5 0 0 0-5-5 5 5 0 0 1-5 5z"/></svg></div>
       <div><div class="app-name">Unravel Digital</div><div class="app-sub">Payroll tracker</div></div>
     </div>
     <div class="topbar-right">
