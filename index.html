@@ -421,6 +421,8 @@ async function doChangePw() {
 }
 
 // ── APP STATE ──
+const CURRENT_YEAR = new Date().getFullYear();
+const YEARS = [CURRENT_YEAR - 1, CURRENT_YEAR];
 const _isLeap = y => (y%4===0 && y%100!==0) || y%400===0;
 const _febEnd = _isLeap(CURRENT_YEAR) ? 'Feb 29' : 'Feb 28';
 const CUTOFFS = ['Jan 15','Jan 30','Feb 15',_febEnd,'Mar 15','Mar 30','Apr 15','Apr 30','May 15','May 30','Jun 15','Jun 30','Jul 15','Jul 30','Aug 15','Aug 30','Sep 15','Sep 30','Oct 15','Oct 30','Nov 15','Nov 30','Dec 15','Dec 30'];
@@ -455,8 +457,6 @@ const SEED = [
 ];
 const LATE_START = ['Mark Lester Pamintuan','Reginald Dave Retodo','Rizzele Marie Olaes','Kenneth Todoc','Shaira Canaling','Mariel','Miguel Lianza','Rafael Tapang'];
 
-const CURRENT_YEAR = new Date().getFullYear();
-const YEARS = [CURRENT_YEAR - 1, CURRENT_YEAR];
 let DB = Object.fromEntries(YEARS.map(y=>[y,[]])); // loaded from Supabase
 let YR = CURRENT_YEAR;
 let CUTOFF = (() => {
