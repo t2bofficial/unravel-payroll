@@ -361,11 +361,30 @@ const sb = {
   }
 };
 
-// ── PASSWORD ──
-const DEFAULT_PW = 'unravel2026';
-const PW_KEY = 'udp_pw';
+// ── HTML ESCAPING (XSS prevention) ──
+const _escEl = document.createElement('div');
+function esc(str) { _escEl.textContent = str; return _escEl.innerHTML; }
+
+// ── PASSWORD (hashed) ──
+const DEFAULT_PW_HASH = 'f8ae3d3550bc96cabbc42d3c378c3bb65139032474f847af20d6e86093e7c1ef'; // sha256 of 'unravel2026'
+const PW_KEY = 'udp_pw_hash';
 const SESSION_KEY = 'udp_session';
-function getStoredPw() { return localStorage.getItem(PW_KEY) || DEFAULT_PW; }
+async function hashPw(pw) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(pw));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+async function getStoredPwHash() {
+  // Migrate old plaintext password from previous version
+  const oldKey = 'udp_pw';
+  const oldPw = localStorage.getItem(oldKey);
+  if (oldPw) {
+    const migrated = await hashPw(oldPw);
+    localStorage.setItem(PW_KEY, migrated);
+    localStorage.removeItem(oldKey);
+    return migrated;
+  }
+  return localStorage.getItem(PW_KEY) || DEFAULT_PW_HASH;
+}
 function checkSession() { const s=sessionStorage.getItem(SESSION_KEY); if(!s)return false; return (Date.now()-parseInt(s))<8*60*60*1000; }
 function setSession() { sessionStorage.setItem(SESSION_KEY, Date.now().toString()); }
 function clearSession() { sessionStorage.removeItem(SESSION_KEY); }
@@ -380,24 +399,31 @@ function toggleLockEye() {
   else { inp.type='password'; icon.innerHTML='<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>'; }
 }
 function onLockKey(e) { if(e.key==='Enter') tryUnlock(); }
-function tryUnlock() {
+async function tryUnlock() {
   const val=document.getElementById('lock-input').value;
-  if(val===getStoredPw()){ setSession(); document.getElementById('lock-screen').style.display='none'; document.getElementById('app').style.display='block'; document.getElementById('lock-input').value=''; renderDots(0); initApp(); }
+  const valHash=await hashPw(val);
+  const storedHash=await getStoredPwHash();
+  if(valHash===storedHash){ setSession(); document.getElementById('lock-screen').style.display='none'; document.getElementById('app').style.display='block'; document.getElementById('lock-input').value=''; renderDots(0); initApp(); }
   else { const inp=document.getElementById('lock-input'); inp.classList.remove('shake'); void inp.offsetWidth; inp.classList.add('shake'); document.getElementById('lock-error').textContent='Incorrect password. Try again.'; inp.value=''; renderDots(0); }
 }
 function lockApp() { clearSession(); document.getElementById('app').style.display='none'; document.getElementById('lock-screen').style.display='flex'; setTimeout(()=>document.getElementById('lock-input').focus(),100); }
 function showChangePw() { document.getElementById('change-pw-screen').style.display='flex'; setTimeout(()=>document.getElementById('cp-current').focus(),50); }
 function hideChangePw() { document.getElementById('change-pw-screen').style.display='none'; ['cp-current','cp-new','cp-confirm'].forEach(id=>document.getElementById(id).value=''); document.getElementById('cp-error').textContent=''; }
-function doChangePw() {
+async function doChangePw() {
   const cur=document.getElementById('cp-current').value, nw=document.getElementById('cp-new').value, cf=document.getElementById('cp-confirm').value, err=document.getElementById('cp-error');
-  if(cur!==getStoredPw()){err.textContent='Current password is incorrect.';return;}
+  const curHash=await hashPw(cur);
+  const storedHash=await getStoredPwHash();
+  if(curHash!==storedHash){err.textContent='Current password is incorrect.';return;}
   if(nw.length<4){err.textContent='New password must be at least 4 characters.';return;}
   if(nw!==cf){err.textContent='Passwords do not match.';return;}
-  localStorage.setItem(PW_KEY,nw); hideChangePw(); toast('Password updated successfully');
+  const newHash=await hashPw(nw);
+  localStorage.setItem(PW_KEY,newHash); hideChangePw(); toast('Password updated successfully');
 }
 
 // ── APP STATE ──
-const CUTOFFS = ['Jan 15','Jan 30','Feb 15','Feb 28','Mar 15','Mar 30','Apr 15','Apr 30','May 15','May 30','Jun 15','Jun 30','Jul 15','Jul 30','Aug 15','Aug 30','Sep 15','Sep 30','Oct 15','Oct 30','Nov 15','Nov 30','Dec 15','Dec 30'];
+const _isLeap = y => (y%4===0 && y%100!==0) || y%400===0;
+const _febEnd = _isLeap(CURRENT_YEAR) ? 'Feb 29' : 'Feb 28';
+const CUTOFFS = ['Jan 15','Jan 30','Feb 15',_febEnd,'Mar 15','Mar 30','Apr 15','Apr 30','May 15','May 30','Jun 15','Jun 30','Jul 15','Jul 30','Aug 15','Aug 30','Sep 15','Sep 30','Oct 15','Oct 30','Nov 15','Nov 30','Dec 15','Dec 30'];
 
 const SEED = [
   {name:'Heinrich Picar',role:'Operations',salary:35000,email:'',acct:''},
@@ -429,14 +455,16 @@ const SEED = [
 ];
 const LATE_START = ['Mark Lester Pamintuan','Reginald Dave Retodo','Rizzele Marie Olaes','Kenneth Todoc','Shaira Canaling','Mariel','Miguel Lianza','Rafael Tapang'];
 
-let DB = { 2025: [], 2026: [] }; // loaded from Supabase
-let YR = 2026;
+const CURRENT_YEAR = new Date().getFullYear();
+const YEARS = [CURRENT_YEAR - 1, CURRENT_YEAR];
+let DB = Object.fromEntries(YEARS.map(y=>[y,[]])); // loaded from Supabase
+let YR = CURRENT_YEAR;
 let CUTOFF = (() => {
   const now=new Date(), m=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][now.getMonth()], d=now.getDate()<=15?'15':'30', g=`${m} ${d}`;
   return CUTOFFS.includes(g)?g:'Mar 15';
 })();
 let SEARCH='', ADDING=false, _exportScope='cutoff', _exportFmt='csv';
-let _syncTimer=null;
+let _syncTimer=null, _searchTimer=null;
 
 const fmt=n=>'₱'+Math.round(n).toLocaleString();
 const ini=n=>n.trim().split(/\s+/).slice(0,2).map(w=>w[0]).join('').toUpperCase();
@@ -453,8 +481,7 @@ function setSyncStatus(state, label) {
 async function initApp() {
   renderYearTabs(); renderChips(); renderSkeletons();
   setSyncStatus('syncing','Loading…');
-  await loadYear(2025);
-  await loadYear(2026);
+  await Promise.all(YEARS.map(y => loadYear(y)));
   render();
   setSyncStatus('synced','Synced');
 }
@@ -462,13 +489,11 @@ async function initApp() {
 async function loadYear(year) {
   try {
     const rows = await sb.get(year);
-    if (rows.length === 0 && year === 2025) {
+    if (rows.length === 0 && year === YEARS[0]) {
       // First time: seed the data
       setSyncStatus('syncing', 'Seeding data…');
-      await seedYear(2025);
-      await seedYear(2026);
-      DB[2025] = await sb.get(2025);
-      DB[2026] = await sb.get(2026);
+      for (const y of YEARS) await seedYear(y);
+      for (const y of YEARS) DB[y] = await sb.get(y);
     } else {
       DB[year] = rows;
     }
@@ -491,7 +516,7 @@ async function seedYear(year) {
 function render() { renderYearTabs(); renderChips(); renderStats(); renderTable(); }
 
 function renderYearTabs() {
-  document.getElementById('year-tabs').innerHTML=[2025,2026].map(y=>`<button class="year-tab${y===YR?' active':''}" onclick="switchYear(${y})">${y}</button>`).join('');
+  document.getElementById('year-tabs').innerHTML=YEARS.map(y=>`<button class="year-tab${y===YR?' active':''}" onclick="switchYear(${y})">${y}</button>`).join('');
 }
 function renderChips() {
   document.getElementById('chips').innerHTML=CUTOFFS.map(c=>`<span class="chip${c===CUTOFF?' active':''}" onclick="setCutoff('${c}')">${c}</span>`).join('');
@@ -526,19 +551,19 @@ function renderTable() {
   const filtered=q?emps.filter(e=>e.name.toLowerCase().includes(q)):emps;
   document.getElementById('toolbar-title').textContent=`${filtered.length} employee${filtered.length!==1?'s':''}`;
   document.getElementById('emp-list').innerHTML=filtered.map(emp=>{
-    const i=emps.indexOf(emp);
     const cut=emp.salary/2, paid=emp.paid&&emp.paid[CUTOFF];
-    const qrHtml=emp.qr?`<img class="qr-thumb" src="${emp.qr}" onclick="viewQR('${emp.id}')" title="View QR" />`:`<div class="qr-placeholder" onclick="openDetail('${emp.id}')" title="Upload QR">+</div>`;
+    const eid=esc(emp.id);
+    const qrHtml=emp.qr?`<img class="qr-thumb" src="${esc(emp.qr)}" onclick="viewQR('${eid}')" title="View QR" />`:`<div class="qr-placeholder" onclick="openDetail('${eid}')" title="Upload QR">+</div>`;
     return `<div class="emp-row">
       <div>${qrHtml}</div>
-      <div class="emp-name-cell" onclick="openDetail('${emp.id}')">
-        <div class="avatar">${ini(emp.name)}</div>
-        <div><div class="emp-name">${emp.name}</div>${emp.role?`<div class="emp-role-text">${emp.role}</div>`:''}</div>
+      <div class="emp-name-cell" onclick="openDetail('${eid}')">
+        <div class="avatar">${esc(ini(emp.name))}</div>
+        <div><div class="emp-name">${esc(emp.name)}</div>${emp.role?`<div class="emp-role-text">${esc(emp.role)}</div>`:''}</div>
       </div>
       <div class="emp-salary-cell">${fmt(emp.salary)}</div>
       <div class="emp-cutoff-cell">${fmt(cut)}</div>
-      <div class="emp-status-cell"><span class="badge ${paid?'paid':'unpaid'}" onclick="quickToggle('${emp.id}')">${paid?'Paid':'Pending'}</span></div>
-      <div style="display:flex;justify-content:center;"><button class="del-btn" onclick="confirmDel('${emp.id}')">×</button></div>
+      <div class="emp-status-cell"><span class="badge ${paid?'paid':'unpaid'}" onclick="quickToggle('${eid}')">${paid?'Paid':'Pending'}</span></div>
+      <div style="display:flex;justify-content:center;"><button class="del-btn" onclick="confirmDel('${eid}')">×</button></div>
     </div>`;
   }).join('');
   const totSal=emps.reduce((s,e)=>s+e.salary,0), totCut=emps.reduce((s,e)=>s+(e.salary/2),0);
@@ -562,7 +587,7 @@ function renderAddForm() {
 
 function switchYear(y){YR=y;render();}
 function setCutoff(c){CUTOFF=c;renderChips();renderStats();renderTable();}
-function filterSearch(v){SEARCH=v;renderTable();}
+function filterSearch(v){clearTimeout(_searchTimer);_searchTimer=setTimeout(()=>{SEARCH=v;renderTable();},150);}
 function openAddForm(){ADDING=true;renderAddForm();window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'});}
 function cancelAdd(){ADDING=false;renderAddForm();}
 
@@ -579,28 +604,30 @@ async function addEmp() {
   try {
     const row = await sb.insert({year:YR,name,role,salary,email,acct:'',qr:'',paid:{}});
     DB[YR].push(row);
-    ADDING=false; render(); setSyncStatus('synced','Saved ✓'); toast(`${name} added`);
+    ADDING=false; render(); setSyncStatus('synced','Saved ✓'); toast(`${esc(name)} added`);
   } catch(e) { setSyncStatus('error','Save failed'); toast('Error saving employee'); }
 }
 
 async function quickToggle(id) {
   const emp=getEmp(id); if(!emp)return;
+  const oldPaid={...emp.paid};
   const newPaid={...emp.paid,[CUTOFF]:!emp.paid[CUTOFF]};
   emp.paid=newPaid; renderStats(); renderTable(); // optimistic
   setSyncStatus('syncing','Saving…');
   try { await sb.update(id,{paid:newPaid}); setSyncStatus('synced','Saved ✓'); toast(newPaid[CUTOFF]?'Marked as paid':'Marked as pending'); }
-  catch(e) { emp.paid=emp.paid; setSyncStatus('error','Save failed'); renderStats(); renderTable(); }
+  catch(e) { emp.paid=oldPaid; setSyncStatus('error','Save failed'); renderStats(); renderTable(); toast('Save failed — reverted'); }
 }
 
 function confirmDel(id) {
   const emp=getEmp(id); if(!emp)return;
+  const eid=esc(id), ename=esc(emp.name);
   showOverlay(`<div class="panel" style="width:340px;" onclick="event.stopPropagation()">
     <div class="panel-body confirm-body">
       <div class="confirm-icon">🗑</div>
-      <div class="confirm-title">Remove ${emp.name}?</div>
-      <div class="confirm-msg">This will permanently remove ${emp.name} from the ${YR} payroll for everyone.</div>
+      <div class="confirm-title">Remove ${ename}?</div>
+      <div class="confirm-msg">This will permanently remove ${ename} from the ${YR} payroll for everyone.</div>
       <div class="confirm-actions">
-        <button class="btn btn-danger" onclick="doDelete('${id}')">Yes, remove</button>
+        <button class="btn btn-danger" onclick="doDelete('${eid}')">Yes, remove</button>
         <button class="btn" onclick="closeOverlay()">Cancel</button>
       </div>
     </div></div>`);
@@ -639,9 +666,9 @@ function viewQR(id) {
   const emp=getEmp(id); if(!emp||!emp.qr)return;
   document.getElementById('qr-viewer-area').innerHTML=`
     <div class="qr-viewer" onclick="closeQRViewer()">
-      <img src="${emp.qr}" alt="${emp.name} QR" />
-      <div class="qr-viewer-name">${emp.name}</div>
-      <div class="qr-viewer-sub">GOtyme Bank · InstaPay ${emp.acct||''}</div>
+      <img src="${esc(emp.qr)}" alt="${esc(emp.name)} QR" />
+      <div class="qr-viewer-name">${esc(emp.name)}</div>
+      <div class="qr-viewer-sub">GOtyme Bank · InstaPay ${esc(emp.acct||'')}</div>
       <div class="qr-viewer-hint">Tap anywhere to close</div>
     </div>`;
 }
@@ -674,18 +701,19 @@ async function removeQR(id) {
 function openDetail(id){renderDetail(id);}
 function renderDetail(id) {
   const emp=getEmp(id); if(!emp)return;
+  const eid=esc(id), ename=esc(emp.name), erole=esc(emp.role||''), eacct=esc(emp.acct||'');
   const cut=emp.salary/2, paidC=CUTOFFS.filter(c=>emp.paid&&emp.paid[c]).length;
   const pct=Math.round((paidC/CUTOFFS.length)*100), totalPaid=paidC*cut;
   const qrBlock=emp.qr
     ?`<div class="qr-card">
-        <div><img class="qr-display" src="${emp.qr}" alt="QR" onclick="viewQR('${id}')" title="Click to enlarge" /></div>
+        <div><img class="qr-display" src="${esc(emp.qr)}" alt="QR" onclick="viewQR('${eid}')" title="Click to enlarge" /></div>
         <div class="qr-info">
           <div class="qr-bank-name">GOtyme Bank · InstaPay</div>
-          <div class="qr-acct">${emp.acct||'Account on QR'}</div>
+          <div class="qr-acct">${eacct||'Account on QR'}</div>
           <div class="qr-actions">
-            <button class="btn btn-primary btn-sm qr-upload-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>Replace QR<input type="file" accept="image/*" onchange="handleQRUpload('${id}',this)" /></button>
-            <button class="btn btn-ghost btn-sm" onclick="viewQR('${id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>Fullscreen</button>
-            <button class="btn btn-sm" style="color:var(--danger);border-color:var(--danger);" onclick="removeQR('${id}')">Remove QR</button>
+            <button class="btn btn-primary btn-sm qr-upload-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>Replace QR<input type="file" accept="image/*" onchange="handleQRUpload('${eid}',this)" /></button>
+            <button class="btn btn-ghost btn-sm" onclick="viewQR('${eid}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>Fullscreen</button>
+            <button class="btn btn-sm" style="color:var(--danger);border-color:var(--danger);" onclick="removeQR('${eid}')">Remove QR</button>
           </div>
         </div>
       </div>`
@@ -696,23 +724,23 @@ function renderDetail(id) {
             <span class="qr-empty-label">Upload QR</span>
           </div>
           <span style="font-size:12px;color:var(--text-2);">Click to upload GOtyme InstaPay QR</span>
-          <input type="file" accept="image/*" style="display:none;" onchange="handleQRUpload('${id}',this)" />
+          <input type="file" accept="image/*" style="display:none;" onchange="handleQRUpload('${eid}',this)" />
         </label>
       </div>`;
-  const items=CUTOFFS.map(c=>{const p=emp.paid&&emp.paid[c];return `<div class="cutoff-item${p?' is-paid':''}"><div class="cutoff-left"><div class="cutoff-dot"></div><span class="cutoff-name">${c}</span></div><div class="cutoff-right"><span class="cutoff-amount">${fmt(cut)}</span><button class="toggle-pill ${p?'mark-unpaid':'mark-paid'}" onclick="toggleDetail('${id}','${c}')">${p?'Unpaid':'Mark paid'}</button></div></div>`;}).join('');
+  const items=CUTOFFS.map(c=>{const p=emp.paid&&emp.paid[c];return `<div class="cutoff-item${p?' is-paid':''}"><div class="cutoff-left"><div class="cutoff-dot"></div><span class="cutoff-name">${esc(c)}</span></div><div class="cutoff-right"><span class="cutoff-amount">${fmt(cut)}</span><button class="toggle-pill ${p?'mark-unpaid':'mark-paid'}" onclick="toggleDetail('${eid}','${esc(c)}')">${p?'Unpaid':'Mark paid'}</button></div></div>`;}).join('');
   showOverlay(`<div class="panel" onclick="event.stopPropagation()">
     <div class="panel-header"><div class="panel-title">Employee details</div><button class="panel-close" onclick="closeOverlay()">×</button></div>
     <div class="panel-body">
       <div class="detail-top">
-        <div class="detail-avatar">${ini(emp.name)}</div>
-        <div><div class="detail-name">${emp.name}</div><div class="detail-meta">${emp.role||'No role set'} · ${fmt(emp.salary)}/mo · ${fmt(cut)}/cutoff</div></div>
+        <div class="detail-avatar">${esc(ini(emp.name))}</div>
+        <div><div class="detail-name">${ename}</div><div class="detail-meta">${erole||'No role set'} · ${fmt(emp.salary)}/mo · ${fmt(cut)}/cutoff</div></div>
       </div>
       <div class="qr-section"><div class="section-title">GOtyme InstaPay QR</div>${qrBlock}</div>
       <div class="edit-grid">
-        <div class="edit-field"><label class="edit-label">Full name</label><input class="edit-input" type="text" value="${emp.name}" onchange="updateEmp('${id}','name',this.value)" /></div>
-        <div class="edit-field"><label class="edit-label">Role</label><input class="edit-input" type="text" value="${emp.role||''}" placeholder="e.g. Developer" onchange="updateEmp('${id}','role',this.value)" /></div>
-        <div class="edit-field"><label class="edit-label">Monthly salary (₱)</label><input class="edit-input" type="number" value="${emp.salary}" onchange="updateEmp('${id}','salary',parseInt(this.value)||0)" /></div>
-        <div class="edit-field"><label class="edit-label">Account (last 4)</label><input class="edit-input" type="text" value="${emp.acct||''}" placeholder="e.g. ·1234" onchange="updateEmp('${id}','acct',this.value)" /></div>
+        <div class="edit-field"><label class="edit-label">Full name</label><input class="edit-input" type="text" value="${ename}" onchange="updateEmp('${eid}','name',this.value)" /></div>
+        <div class="edit-field"><label class="edit-label">Role</label><input class="edit-input" type="text" value="${erole}" placeholder="e.g. Developer" onchange="updateEmp('${eid}','role',this.value)" /></div>
+        <div class="edit-field"><label class="edit-label">Monthly salary (₱)</label><input class="edit-input" type="number" value="${emp.salary}" onchange="updateEmp('${eid}','salary',parseInt(this.value)||0)" /></div>
+        <div class="edit-field"><label class="edit-label">Account (last 4)</label><input class="edit-input" type="text" value="${eacct}" placeholder="e.g. ·1234" onchange="updateEmp('${eid}','acct',this.value)" /></div>
       </div>
       <div class="section-title">Payment history — ${YR}</div>
       <div class="cutoff-list">${items}</div>
@@ -722,7 +750,7 @@ function renderDetail(id) {
       </div>
     </div>
     <div class="panel-footer">
-      <button class="btn btn-danger btn-sm" onclick="closeOverlay();confirmDel('${id}')">Remove employee</button>
+      <button class="btn btn-danger btn-sm" onclick="closeOverlay();confirmDel('${eid}')">Remove employee</button>
       <button class="btn btn-primary btn-sm" onclick="closeOverlay()">Done</button>
     </div>
   </div>`);
@@ -738,7 +766,7 @@ function openExport() {
       <div class="export-scope">
         <div class="scope-opt active" id="sc-cutoff" onclick="setExpScope('cutoff')">Current cutoff<br><small style="opacity:.7">${CUTOFF}</small></div>
         <div class="scope-opt" id="sc-year" onclick="setExpScope('year')">Full year<br><small style="opacity:.7">${YR}</small></div>
-        <div class="scope-opt" id="sc-all" onclick="setExpScope('all')">All years<br><small style="opacity:.7">2025 + 2026</small></div>
+        <div class="scope-opt" id="sc-all" onclick="setExpScope('all')">All years<br><small style="opacity:.7">${YEARS.join(' + ')}</small></div>
       </div>
       <div class="section-title" style="margin-bottom:10px;">Format</div>
       <div class="export-option active" id="ef-csv" onclick="setExpFmt('csv')"><div class="export-icon">📄</div><div><div class="export-option-title">CSV spreadsheet</div><div class="export-option-desc">Open in Excel, Google Sheets, or Numbers</div></div></div>
@@ -790,8 +818,13 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeOverlay();clos
 // ── AUTO REFRESH every 30s (poll for changes from other users) ──
 setInterval(async()=>{
   if(document.getElementById('app').style.display==='none')return;
-  try { DB[YR]=await sb.get(YR); renderStats(); renderTable(); setSyncStatus('synced','Live'); }
-  catch(e){}
+  try {
+    const fresh=await sb.get(YR);
+    if(JSON.stringify(fresh)!==JSON.stringify(DB[YR])){
+      DB[YR]=fresh; renderStats(); renderTable();
+    }
+    setSyncStatus('synced','Live');
+  } catch(e){ setSyncStatus('error','Offline'); }
 }, 30000);
 
 // ── BOOT ──
